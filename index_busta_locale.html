@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Sbusta i Meme</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    .buttons {
+      margin: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #pack img {
+      width: 200px;
+      cursor: pointer;
+    }
+    .card {
+      display: inline-block;
+      margin: 10px;
+      width: 120px;
+      height: 180px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px black;
+    }
+    .Comune { border: 2px solid gray; }
+    .Rara { border: 2px solid blue; }
+    .Epica { border: 2px solid purple; }
+    .Leggendaria { border: 2px solid orange; }
+    .Segreta { border: 2px solid red; }
+  </style>
+</head>
+<body>
+  <h1>Sbusta i Meme</h1>
+  <div class="buttons">
+    <button onclick="startPack()">Apri pacchetto</button>
+    <button onclick="showCollection()">Collezione</button>
+    <button onclick="resetCollection()">Reset</button>
+  </div>
+  <div id="pack"></div>
+  <div id="cardsContainer"></div>
+
+  <script>
+    const cards = [
+  { name: "Il trio blasfemo", image: "img/IlTrioBlasfemo.jpg", rarity: "Leggendaria" },
+  { name: "Re gatto Pace", image: "img/ReGattoPace.jpg", rarity: "Epica" },
+  { name: "Il cinghiale, ma non della Tassani", image: "img/CinghialeNonTassani.jpg", rarity: "Comune" },
+  { name: "Salva al lavoro", image: "img/SalvaAlLavoro.jpg", rarity: "Comune" },
+  { name: "Salva si sente a casa", image: "img/SalvaCasa.jpg", rarity: "Rara" },
+  { name: "6-18 con stile", image: "img/6-18.jpg", rarity: "Rara" },
+  { name: "La piccola papà", image: "img/PiccolaPapa.jpg", rarity: "Epica" },
+  { name: "TIZI SINDACO!!!", image: "img/TiziSindaco.jpg", rarity: "Leggendaria" },
+  { name: "Impara a parlare con Anto", image: "img/Anto.jpg", rarity: "Comune" },
+  { name: "Non solo la vigilanza patisce", image: "img/VigilanzaPatisce.jpg", rarity: "Rara" },
+  { name: "nITcholas", image: "img/nITcholas.jpg", rarity: "Comune" },
+  { name: "Bolzaneto o Manchester?", image: "img/Bolzaneto.jpg", rarity: "Rara" },
+  { name: "Il cinghiale della Tassani", image: "img/CinghialeTassani.jpg", rarity: "Rara" },
+  { name: "LA GANG!", image: "img/LaGang.jpg", rarity: "Epica" },
+  { name: "Fuck CRISTIA", image: "img/Cristia.jpg", rarity: "Comune" },
+  { name: "nITcholas alla Stoppani", image: "img/nITcholasStoppani.jpg", rarity: "Epica" },
+  { name: "Piccolo Salva", image: "img/PiccoloSalva.jpg", rarity: "Rara" },
+  { name: "Piccolo Lo", image: "img/PiccoloLo.jpg", rarity: "Rara" },
+  { name: "2 salumieri fanno VI-GI-LAN-ZA", image: "img/SalumieriVigilanza.jpg", rarity: "Epica" },
+  { name: "Perticozzo nazionale", image: "img/Perticozzo.jpg", rarity: "Segreta" },
+];
+
+    const rarities = {
+      "Comune": 50,
+      "Rara": 25,
+      "Epica": 15,
+      "Leggendaria": 9,
+      "Segreta": 1
+    };
+
+    function pickRarity() {
+      const rand = Math.random() * 100;
+      let total = 0;
+      for (const [rarity, chance] of Object.entries(rarities)) {
+        total += chance;
+        if (rand <= total) return rarity;
+      }
+      return "Comune";
+    }
+
+    function openPack() {
+      const pulled = [];
+      for (let i = 0; i < 3; i++) {
+        let rarity, pool;
+        do {
+          rarity = pickRarity();
+          pool = cards.filter(c => c.rarity === rarity);
+        } while (pool.length === 0);
+        const selected = pool[Math.floor(Math.random() * pool.length)];
+        pulled.push(selected);
+
+        const collezione = JSON.parse(localStorage.getItem("collezione") || "{}");
+        collezione[selected.name] = (collezione[selected.name] || 0) + 1;
+        localStorage.setItem("collezione", JSON.stringify(collezione));
+      }
+
+      const container = document.getElementById("cardsContainer");
+      container.innerHTML = "";
+      pulled.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card " + card.rarity;
+        div.style.backgroundImage = `url('${card.image}')`;
+        div.textContent = card.name;
+        container.appendChild(div);
+      });
+    }
+
+    function startPack() {
+      const pack = document.getElementById('pack');
+      pack.innerHTML = '<img src="img/busta.jpg" alt="Busta" id="envelope">';
+      document.getElementById('cardsContainer').innerHTML = '';
+      document.getElementById('envelope').onclick = () => {
+        pack.innerHTML = '';
+        openPack();
+      };
+    }
+
+    function showCollection() {
+      const container = document.getElementById("cardsContainer");
+      container.innerHTML = "";
+      const collezione = JSON.parse(localStorage.getItem("collezione") || "{}");
+
+      cards.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card " + card.rarity;
+        if (collezione[card.name]) {
+          div.style.backgroundImage = `url('${card.image}')`;
+          div.textContent = card.name + " x" + collezione[card.name];
+        } else {
+          div.style.backgroundColor = "black";
+          div.textContent = "???";
+        }
+        container.appendChild(div);
+      });
+    }
+
+    function resetCollection() {
+      if (confirm("Sei sicuro di voler azzerare la collezione?")) {
+        localStorage.removeItem("collezione");
+        alert("Collezione azzerata.");
+      }
+    }
+  </script>
+</body>
+</html>
